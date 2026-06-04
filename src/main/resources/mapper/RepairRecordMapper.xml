@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.studentlife.repair.module.repair_record.mapper.RepairRecordMapper">
+
+    <sql id="whereCondition">
+        <where>
+            <if test="entity.id != null">
+                AND repairRecord.id = #{entity.id}
+            </if>
+            <if test="entity.orderId != null">
+                AND repairRecord.order_id = #{entity.orderId}
+            </if>
+            <if test="entity.workStartTimeStart != null and entity.workStartTimeEnd != null">
+                AND repairRecord.work_start_time BETWEEN #{entity.workStartTimeStart} AND #{entity.workStartTimeEnd}
+            </if>
+            <if test="entity.workEndTimeStart != null and entity.workEndTimeEnd != null">
+                AND repairRecord.work_end_time BETWEEN #{entity.workEndTimeStart} AND #{entity.workEndTimeEnd}
+            </if>
+            <if test="entity.orderNo != null and entity.orderNo != ''">
+                AND repairOrder.order_no LIKE CONCAT('%', #{entity.orderNo}, '%')
+            </if>
+            <if test="entity.realName != null and entity.realName != ''">
+                AND sysUser.real_name LIKE CONCAT('%', #{entity.realName}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询 -->
+    <select id="pageQuery" resultType="com.studentlife.repair.module.repair_record.entity.RepairRecord">
+        SELECT repairRecord.*
+        , repairOrder.order_no AS orderNo
+        , sysUser.real_name AS realName
+        FROM repair_record repairRecord
+        LEFT JOIN repair_order repairOrder ON repairRecord.order_id = repairOrder.id
+        LEFT JOIN sys_user sysUser ON repairRecord.worker_user_id = sysUser.id
+        <include refid="whereCondition"/>
+        ORDER BY repairRecord.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询总数 -->
+    <select id="countQuery" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM repair_record repairRecord
+        LEFT JOIN repair_order repairOrder ON repairRecord.order_id = repairOrder.id
+        LEFT JOIN sys_user sysUser ON repairRecord.worker_user_id = sysUser.id
+        <include refid="whereCondition"/>
+    </select>
+
+    <!-- 列表查询（不分页） -->
+    <select id="listQuery" resultType="com.studentlife.repair.module.repair_record.entity.RepairRecord">
+        SELECT repairRecord.*
+        , repairOrder.order_no AS orderNo
+        , sysUser.real_name AS realName
+        FROM repair_record repairRecord
+        LEFT JOIN repair_order repairOrder ON repairRecord.order_id = repairOrder.id
+        LEFT JOIN sys_user sysUser ON repairRecord.worker_user_id = sysUser.id
+        <include refid="whereCondition"/>
+        ORDER BY repairRecord.create_time DESC
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="getById" resultType="com.studentlife.repair.module.repair_record.entity.RepairRecord">
+        SELECT repairRecord.*
+        , repairOrder.order_no AS orderNo
+        , sysUser.real_name AS realName
+        FROM repair_record repairRecord
+        LEFT JOIN repair_order repairOrder ON repairRecord.order_id = repairOrder.id
+        LEFT JOIN sys_user sysUser ON repairRecord.worker_user_id = sysUser.id
+        WHERE repairRecord.id = #{id}
+    </select>
+
+</mapper>

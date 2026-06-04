@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.studentlife.repair.basic.mapper.EchartsMapper">
+
+    <select id="countUserByRole" resultType="com.studentlife.repair.vo.EchartsDataVO">
+        SELECT CASE role_key WHEN 'admin' THEN '管理员' WHEN 'dorm_manager' THEN '宿管' WHEN 'repair_worker' THEN '维修人员' END AS name, COUNT(*) AS value FROM sys_user WHERE 1=1 <if test="status != null"> <if test="status != null and status != -1">AND status = #{status}</if></if> GROUP BY role_key
+    </select>
+
+    <select id="countRepairOrderByFaultType" resultType="com.studentlife.repair.vo.EchartsDataVO">
+        SELECT CASE fault_type WHEN 1 THEN '水电' WHEN 2 THEN '门窗' WHEN 3 THEN '家具' WHEN 4 THEN '网络' WHEN 5 THEN '其他' END AS name, COUNT(*) AS value FROM repair_order WHERE 1=1 <if test="startTime != null and startTime != ''"> AND create_time &gt;= #{startTime}</if> <if test="endTime != null and endTime != ''"> AND create_time &lt;= #{endTime}</if> <if test="auditStatus != null"> <if test="auditStatus != null and auditStatus != -1">AND audit_status = #{auditStatus}</if></if> GROUP BY fault_type
+    </select>
+
+    <select id="countRepairOrderByStatusTrend" resultType="com.studentlife.repair.vo.EchartsDataVO">
+        SELECT DATE_FORMAT(create_time, '%Y-%m-%d') AS name, COUNT(CASE WHEN order_status = 1 THEN 1 END) AS value FROM repair_order WHERE 1=1 <if test="startTime != null and startTime != ''"> AND create_time &gt;= #{startTime}</if> <if test="endTime != null and endTime != ''"> AND create_time &lt;= #{endTime}</if> GROUP BY DATE_FORMAT(create_time, '%Y-%m-%d') ORDER BY name
+    </select>
+
+    <select id="countBuildingByRoomType" resultType="com.studentlife.repair.vo.EchartsDataVO">
+        SELECT CASE room_type WHEN 1 THEN '男生宿舍' WHEN 2 THEN '女生宿舍' END AS name, COUNT(*) AS value FROM dorm_building WHERE 1=1 <if test="status != null"> <if test="status != null and status != -1">AND status = #{status}</if></if> GROUP BY room_type
+    </select>
+
+    <select id="countMaterialByType" resultType="com.studentlife.repair.vo.EchartsDataVO">
+        SELECT CASE material_type WHEN 1 THEN '水电类' WHEN 2 THEN '门窗类' WHEN 3 THEN '家具类' WHEN 4 THEN '网络类' WHEN 5 THEN '其他' END AS name, SUM(stock_qty) AS value FROM material WHERE 1=1 <if test="status != null"> <if test="status != null and status != -1">AND status = #{status}</if></if> GROUP BY material_type
+    </select>
+
+    <select id="countMaterialApplyByStatus" resultType="com.studentlife.repair.vo.EchartsDataVO">
+        SELECT CASE apply_status WHEN 0 THEN '待审核' WHEN 1 THEN '通过' WHEN 2 THEN '驳回' END AS name, COUNT(*) AS value FROM material_apply WHERE 1=1 <if test="startTime != null and startTime != ''"> AND create_time &gt;= #{startTime}</if> <if test="endTime != null and endTime != ''"> AND create_time &lt;= #{endTime}</if> GROUP BY apply_status
+    </select>
+
+    <select id="countRepairEvaluateByScore" resultType="com.studentlife.repair.vo.EchartsDataVO">
+        SELECT CONCAT(score, '分') AS name, COUNT(*) AS value FROM repair_evaluate WHERE 1=1 <if test="startTime != null and startTime != ''"> AND create_time &gt;= #{startTime}</if> <if test="endTime != null and endTime != ''"> AND create_time &lt;= #{endTime}</if> GROUP BY score ORDER BY score
+    </select>
+
+    <select id="countNotifyByTypeAndLevel" resultType="com.studentlife.repair.vo.EchartsDataVO">
+        SELECT CASE notify_type WHEN 1 THEN '系统通知' WHEN 2 THEN '工单通知' WHEN 3 THEN '材料通知' END AS name, COUNT(*) AS value FROM sys_notify WHERE 1=1 <if test="level != null"> <if test="level != null and level != -1">AND level = #{level}</if></if> GROUP BY notify_type
+    </select>
+
+    <select id="countStudentByGender" resultType="com.studentlife.repair.vo.EchartsDataVO">
+        SELECT CASE gender WHEN 0 THEN '未知' WHEN 1 THEN '男' WHEN 2 THEN '女' END AS name, COUNT(*) AS value FROM student_profile WHERE 1=1 <if test="status != null"> <if test="status != null and status != -1">AND status = #{status}</if></if> GROUP BY gender
+    </select>
+
+    <select id="countRepairOrderByBuilding" resultType="com.studentlife.repair.vo.EchartsDataVO">
+        SELECT b.building_name AS name, COUNT(r.id) AS value FROM repair_order r LEFT JOIN dorm_building b ON r.building_id = b.id WHERE 1=1 <if test="startTime != null and startTime != ''"> AND r.create_time &gt;= #{startTime}</if> <if test="endTime != null and endTime != ''"> AND r.create_time &lt;= #{endTime}</if> <if test="orderStatus != null"> <if test="orderStatus != null and orderStatus != -1">AND r.order_status = #{orderStatus}</if></if> GROUP BY b.building_name
+    </select>
+
+</mapper>

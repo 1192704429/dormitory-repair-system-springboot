@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.studentlife.repair.module.repair_order.mapper.RepairOrderMapper">
+
+    <sql id="whereCondition">
+        <where>
+            <if test="entity.id != null">
+                AND repairOrder.id = #{entity.id}
+            </if>
+            <if test="entity.orderNo != null and entity.orderNo != ''">
+                AND repairOrder.order_no LIKE CONCAT('%', #{entity.orderNo}, '%')
+            </if>
+            <if test="entity.faultType != null">
+                AND repairOrder.fault_type = #{entity.faultType}
+            </if>
+            <if test="entity.faultTitle != null and entity.faultTitle != ''">
+                AND repairOrder.fault_title LIKE CONCAT('%', #{entity.faultTitle}, '%')
+            </if>
+            <if test="entity.auditStatus != null">
+                AND repairOrder.audit_status = #{entity.auditStatus}
+            </if>
+            <if test="entity.auditTimeStart != null and entity.auditTimeEnd != null">
+                AND repairOrder.audit_time BETWEEN #{entity.auditTimeStart} AND #{entity.auditTimeEnd}
+            </if>
+            <if test="entity.assignStatus != null">
+                AND repairOrder.assign_status = #{entity.assignStatus}
+            </if>
+            <if test="entity.assignTimeStart != null and entity.assignTimeEnd != null">
+                AND repairOrder.assign_time BETWEEN #{entity.assignTimeStart} AND #{entity.assignTimeEnd}
+            </if>
+            <if test="entity.orderStatus != null">
+                AND repairOrder.order_status = #{entity.orderStatus}
+            </if>
+            <if test="entity.finishTimeStart != null and entity.finishTimeEnd != null">
+                AND repairOrder.finish_time BETWEEN #{entity.finishTimeStart} AND #{entity.finishTimeEnd}
+            </if>
+            <if test="entity.realName != null and entity.realName != ''">
+                AND studentProfile.real_name LIKE CONCAT('%', #{entity.realName}, '%')
+            </if>
+            <if test="entity.buildingName != null and entity.buildingName != ''">
+                AND dormBuilding.building_name LIKE CONCAT('%', #{entity.buildingName}, '%')
+            </if>
+            <if test="entity.roomNo != null and entity.roomNo != ''">
+                AND dormRoom.room_no LIKE CONCAT('%', #{entity.roomNo}, '%')
+            </if>
+            <if test="entity.realName2 != null and entity.realName2 != ''">
+                AND sysUser2.real_name LIKE CONCAT('%', #{entity.realName2}, '%')
+            </if>
+            <if test="entity.realName3 != null and entity.realName3 != ''">
+                AND sysUser3.real_name LIKE CONCAT('%', #{entity.realName3}, '%')
+            </if>
+            <!-- 如果是学生角色，只查询自己提交的报修单 -->
+            <if test="entity.currentUserRole != null and entity.currentUserRole == 'student' and entity.currentUserId != null">
+                AND repairOrder.student_user_id = #{entity.currentUserId}
+            </if>
+            <!-- 如果是宿管角色，只查询管理的楼栋的报修单 -->
+            <if test="entity.currentUserRole != null and entity.currentUserRole == 'dorm_manager' and entity.currentUserId != null">
+                AND dormBuilding.manager_user_id = #{entity.currentUserId}
+            </if>
+            <!-- 如果是维修人员角色，只查询分配给自己的报修单 -->
+            <if test="entity.currentUserRole != null and entity.currentUserRole == 'repair_worker' and entity.currentUserId != null">
+                AND repairOrder.worker_user_id = #{entity.currentUserId}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询 -->
+    <select id="pageQuery" resultType="com.studentlife.repair.module.repair_order.entity.RepairOrder">
+        SELECT repairOrder.*
+        , studentProfile.real_name AS realName
+        , dormBuilding.building_name AS buildingName
+        , dormRoom.room_no AS roomNo
+        , sysUser2.real_name AS realName2
+        , sysUser3.real_name AS realName3
+        FROM repair_order repairOrder
+        LEFT JOIN student_profile studentProfile ON repairOrder.student_user_id = studentProfile.id
+        LEFT JOIN dorm_building dormBuilding ON repairOrder.building_id = dormBuilding.id
+        LEFT JOIN dorm_room dormRoom ON repairOrder.room_id = dormRoom.id
+        LEFT JOIN sys_user sysUser2 ON repairOrder.audit_user_id = sysUser2.id
+        LEFT JOIN sys_user sysUser3 ON repairOrder.worker_user_id = sysUser3.id
+        <include refid="whereCondition"/>
+        ORDER BY repairOrder.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询总数 -->
+    <select id="countQuery" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM repair_order repairOrder
+        LEFT JOIN student_profile studentProfile ON repairOrder.student_user_id = studentProfile.id
+        LEFT JOIN dorm_building dormBuilding ON repairOrder.building_id = dormBuilding.id
+        LEFT JOIN dorm_room dormRoom ON repairOrder.room_id = dormRoom.id
+        LEFT JOIN sys_user sysUser2 ON repairOrder.audit_user_id = sysUser2.id
+        LEFT JOIN sys_user sysUser3 ON repairOrder.worker_user_id = sysUser3.id
+        <include refid="whereCondition"/>
+    </select>
+
+    <!-- 列表查询（不分页） -->
+    <select id="listQuery" resultType="com.studentlife.repair.module.repair_order.entity.RepairOrder">
+        SELECT repairOrder.*
+        , studentProfile.real_name AS realName
+        , dormBuilding.building_name AS buildingName
+        , dormRoom.room_no AS roomNo
+        , sysUser2.real_name AS realName2
+        , sysUser3.real_name AS realName3
+        FROM repair_order repairOrder
+        LEFT JOIN student_profile studentProfile ON repairOrder.student_user_id = studentProfile.id
+        LEFT JOIN dorm_building dormBuilding ON repairOrder.building_id = dormBuilding.id
+        LEFT JOIN dorm_room dormRoom ON repairOrder.room_id = dormRoom.id
+        LEFT JOIN sys_user sysUser2 ON repairOrder.audit_user_id = sysUser2.id
+        LEFT JOIN sys_user sysUser3 ON repairOrder.worker_user_id = sysUser3.id
+        <include refid="whereCondition"/>
+        ORDER BY repairOrder.create_time DESC
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="getById" resultType="com.studentlife.repair.module.repair_order.entity.RepairOrder">
+        SELECT repairOrder.*
+        , studentProfile.real_name AS realName
+        , dormBuilding.building_name AS buildingName
+        , dormRoom.room_no AS roomNo
+        , sysUser2.real_name AS realName2
+        , sysUser3.real_name AS realName3
+        FROM repair_order repairOrder
+        LEFT JOIN student_profile studentProfile ON repairOrder.student_user_id = studentProfile.id
+        LEFT JOIN dorm_building dormBuilding ON repairOrder.building_id = dormBuilding.id
+        LEFT JOIN dorm_room dormRoom ON repairOrder.room_id = dormRoom.id
+        LEFT JOIN sys_user sysUser2 ON repairOrder.audit_user_id = sysUser2.id
+        LEFT JOIN sys_user sysUser3 ON repairOrder.worker_user_id = sysUser3.id
+        WHERE repairOrder.id = #{id}
+    </select>
+
+</mapper>

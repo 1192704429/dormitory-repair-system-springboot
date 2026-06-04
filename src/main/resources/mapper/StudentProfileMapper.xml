@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.studentlife.repair.module.student_profile.mapper.StudentProfileMapper">
+
+    <sql id="whereCondition">
+        <where>
+            <if test="entity.id != null">
+                AND studentProfile.id = #{entity.id}
+            </if>
+            <if test="entity.username != null and entity.username != ''">
+                AND studentProfile.username LIKE CONCAT('%', #{entity.username}, '%')
+            </if>
+            <if test="entity.realName != null and entity.realName != ''">
+                AND studentProfile.real_name LIKE CONCAT('%', #{entity.realName}, '%')
+            </if>
+            <if test="entity.gender != null">
+                AND studentProfile.gender = #{entity.gender}
+            </if>
+            <if test="entity.phone != null and entity.phone != ''">
+                AND studentProfile.phone LIKE CONCAT('%', #{entity.phone}, '%')
+            </if>
+            <if test="entity.email != null and entity.email != ''">
+                AND studentProfile.email LIKE CONCAT('%', #{entity.email}, '%')
+            </if>
+            <if test="entity.studentNo != null and entity.studentNo != ''">
+                AND studentProfile.student_no LIKE CONCAT('%', #{entity.studentNo}, '%')
+            </if>
+            <if test="entity.college != null and entity.college != ''">
+                AND studentProfile.college LIKE CONCAT('%', #{entity.college}, '%')
+            </if>
+            <if test="entity.major != null and entity.major != ''">
+                AND studentProfile.major LIKE CONCAT('%', #{entity.major}, '%')
+            </if>
+            <if test="entity.grade != null and entity.grade != ''">
+                AND studentProfile.grade LIKE CONCAT('%', #{entity.grade}, '%')
+            </if>
+            <if test="entity.className != null and entity.className != ''">
+                AND studentProfile.class_name LIKE CONCAT('%', #{entity.className}, '%')
+            </if>
+            <if test="entity.idCard != null and entity.idCard != ''">
+                AND studentProfile.id_card LIKE CONCAT('%', #{entity.idCard}, '%')
+            </if>
+            <if test="entity.status != null">
+                AND studentProfile.status = #{entity.status}
+            </if>
+            <if test="entity.roomId != null">
+                AND studentProfile.room_id = #{entity.roomId}
+            </if>
+            <if test="entity.roomNo != null and entity.roomNo != ''">
+                AND dormRoom.room_no LIKE CONCAT('%', #{entity.roomNo}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询 -->
+    <select id="pageQuery" resultType="com.studentlife.repair.module.student_profile.entity.StudentProfile">
+        SELECT studentProfile.*
+        , dormRoom.room_no AS roomNo
+        , dormBuilding.building_name AS buildingName
+        FROM student_profile studentProfile
+        LEFT JOIN dorm_room dormRoom ON studentProfile.room_id = dormRoom.id
+        LEFT JOIN dorm_building dormBuilding ON dormRoom.building_id = dormBuilding.id
+        <include refid="whereCondition"/>
+        ORDER BY studentProfile.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询总数 -->
+    <select id="countQuery" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM student_profile studentProfile
+        LEFT JOIN dorm_room dormRoom ON studentProfile.room_id = dormRoom.id
+        LEFT JOIN dorm_building dormBuilding ON dormRoom.building_id = dormBuilding.id
+        <include refid="whereCondition"/>
+    </select>
+
+    <!-- 列表查询（不分页） -->
+    <select id="listQuery" resultType="com.studentlife.repair.module.student_profile.entity.StudentProfile">
+        SELECT studentProfile.*
+        , dormRoom.room_no AS roomNo
+        , dormBuilding.building_name AS buildingName
+        FROM student_profile studentProfile
+        LEFT JOIN dorm_room dormRoom ON studentProfile.room_id = dormRoom.id
+        LEFT JOIN dorm_building dormBuilding ON dormRoom.building_id = dormBuilding.id
+        <include refid="whereCondition"/>
+        ORDER BY studentProfile.create_time DESC
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="getById" resultType="com.studentlife.repair.module.student_profile.entity.StudentProfile">
+        SELECT studentProfile.*
+        , dormRoom.room_no AS roomNo
+        , dormBuilding.building_name AS buildingName
+        FROM student_profile studentProfile
+        LEFT JOIN dorm_room dormRoom ON studentProfile.room_id = dormRoom.id
+        LEFT JOIN dorm_building dormBuilding ON dormRoom.building_id = dormBuilding.id
+        WHERE studentProfile.id = #{id}
+    </select>
+
+</mapper>
